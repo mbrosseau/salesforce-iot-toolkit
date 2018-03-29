@@ -10,26 +10,17 @@
     	action.setCallback(this, function(a) {
             if (a.getState() === "SUCCESS") {
               //  console.log("Loaded Event Object Fields");
-              //  console.log(a.getReturnValue());
+                //console.log(a.getReturnValue());
                 var fieldsNames = a.getReturnValue();
                 var deviceKey = component.get("v.deviceId");
             
-             /*  var index = fieldsNames.indexOf(deviceKey.substring(0, deviceKey.length-3));
+               var index = fieldsNames.indexOf(deviceKey.substring(0, deviceKey.length-3));
             	//console.log(index);
                  if (index > -1) {
                     fieldsNames.splice(index, 1);
-                } */
-                
-              
-                for(var i=0; i<fieldsNames.length; i++) {
-                      //console.log(fieldsNames[i].Label);
-                    
-                    if(fieldsNames[i].QualifiedApiName == deviceKey) {
-                         fieldsNames.splice(i, 1);
-                    }
-                
                 }
-               	component.set("v.objectFields", fieldsNames); 
+                
+                component.set("v.objectFields", fieldsNames);
               
             } else if (a.getState() === "ERROR") {
                  console.log("Loading Event Object Fields Failed! ");
@@ -121,20 +112,19 @@
         var inputKey = component.get("v.deviceId");
         var recordId = component.get("v.recordId");
         
-       // var lines=fileContents.split("\n");
-        
-        var lines=fileContents.split(/\r?\n|\r/);
+        var lines=fileContents.split("\n");
         var result = []; 
         var headers=lines[0].split(",");
         
         var timestamp=0;
         var sendToIoTMsg = function (cmp, fieldList, iotData) {   
-         // var  myTime2 = new Date();
-       //    console.log("Timeout ended, sending IOT Event "  + " " + myTime2.getSeconds() );
+          
+          // console.log("Timeout ended, sending IOT Event "  + " " + iotData);
             helper.sendToIOT(cmp, fieldList, iotData);
         }   
-     //   var myTime;
-     //   var newTime;
+
+        var timestamp;
+        
        //  console.log("---Starting loop---");
         for(var i=1;i<lines.length;i++){
             var obj = {};
@@ -152,9 +142,8 @@
                	 obj[headers[j]] = currentline[j];
                  }
             }
-        //    myTime = new Date();
-//			newTime = myTime.getSeconds() + (timestamp/1000);           
-            console.log("---Sending timeout " + timestamp );
+           
+            console.log("---Sending timeout " + timestamp);
             setTimeout(sendToIoTMsg,  timestamp, component, headers, obj);
           
         }       
@@ -164,12 +153,10 @@
     },
     
     sendToIOT : function(component, fieldList, iotMsg) {
-        console.log("---Sending IoT Msg  ---");
+        console.log("---Sending IoT Msg ---");
         var spinner = component.find("eventSpinner");
-       // $A.util.toggleClass(spinner, "slds-show");
-          $A.util.addClass(spinner, 'slds-show'); 
-     
-        // console.log(iotMsg);
+        $A.util.toggleClass(spinner, "slds-show");
+       // console.log(iotMsg);
         
        //    console.log("---getting data ---");
         var recordId = component.get("v.recordId");
@@ -221,9 +208,7 @@
     	action.setCallback(this, function(a) {
             if (a.getState() === "SUCCESS") {
                 console.log("Sending IOT Event Success! ");
-                 var spinner2 = component.find("eventSpinner");
-                 $A.util.removeClass(spinner2, 'slds-show');
-   
+                
             } else if (a.getState() === "ERROR") {
                  console.log("Sending IOT Event Failed! ");
                //  console.log(a.getError());

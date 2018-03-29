@@ -49,8 +49,8 @@
      /***** Generate Platform Event ********/
       	var eventMsg = "{\"sobjectType\":\"" + eventName + "\",\"" + inputKey + "\":\"" + recordId  + "\"";	 
         for(var i=0; i< objectFields.length; i++) {
-             itemId = document.getElementById(objectFields[i].QualifiedApiName);
-             eventMsg = eventMsg +  ",\"" + objectFields[i].QualifiedApiName + "\": \"" + itemId.value + "\"";  
+             itemId = document.getElementById(objectFields[i]);
+             eventMsg = eventMsg +  ",\"" + objectFields[i] + "__c\": \"" + itemId.value + "\"";  
         }
  		eventMsg = eventMsg + "}";
         
@@ -64,8 +64,8 @@
             objVal = "{\"sobjectType\":\"" + objectName + "\",\"" + inputKey + "\":\"" + recordId  + "\"";
           
             for(var i=0; i< objectFields.length; i++) {
-                 itemId = document.getElementById(objectFields[i].QualifiedApiName);
-                objVal = objVal +  ",\"" + objectFields[i].QualifiedApiName + "\": \"" + itemId.value + "\"";  
+                 itemId = document.getElementById(objectFields[i]);
+                objVal = objVal +  ",\"" + objectFields[i] + "__c\": \"" + itemId.value + "\"";  
             }
             
             if(parentField != null) {
@@ -77,7 +77,7 @@
             component.set("v.objectValue", objVal);
         	objVal = component.get("v.objectValue");
             
-          //  console.log("Publish and Persist");
+           // console.log("Publish and Persist");
              action = component.get("c.publishAndPersistEvent");
             
         } else {
@@ -96,7 +96,7 @@
 
     	action.setCallback(this, function(a) {
             if (a.getState() === "SUCCESS") {
-                console.log("Sending IOT Event Success! ");
+              //  console.log("Sending IOT Event Success! ");
                 
             } else if (a.getState() === "ERROR") {
                  console.log("Sending IOT Event Failed! ");

@@ -11,7 +11,7 @@ public class PlatformEventSimulatorController {
         List<sObject> eventList = new List<sObject>();
         eventList.add(eventValue);
         
-        List<Database.SaveResult> results = EventBus.publish(eventList);
+       List<Database.SaveResult> results = EventBus.publish(eventList);
         
         // Inspect publishing results
         for (Database.SaveResult result : results) {
@@ -21,7 +21,9 @@ public class PlatformEventSimulatorController {
                 }
             }
         }
-   }
+       
+         
+    }
     
      @AuraEnabled
     public static void publishAndPersistEvent(sObject eventValue, sObject objValue) {
@@ -30,47 +32,44 @@ public class PlatformEventSimulatorController {
     }
 
     @AuraEnabled
-    public static List<FieldDefinition> getEventFields(String eventName) {
+    public static List<String> getEventFields(String eventName) {
          System.debug('Event name ' + eventName);
-       // eventName = eventName.left(eventName.length()-3);
+        eventName = eventName.left(eventName.length()-3);
      
-          
-        // List<EntityDefinition> evList = [Select Label, DeveloperName, QualifiedApiName, NamespacePrefix From EntityDefinition where QualifiedApiName= 'platformevsim__SampleEvent__e' ];
-          // System.debug(evList);
-       
         
-        List<FieldDefinition> fieldList = [Select Label, QualifiedApiName, NamespacePrefix, DataType, FieldDefinition.Publisher.isSalesforce From FieldDefinition where EntityDefinition.QualifiedApiName=: eventName ];
+        List<FieldDefinition> fieldList = [Select DeveloperName, DataType, FieldDefinition.Publisher.isSalesforce From FieldDefinition where EntityDefinition.DeveloperName=: eventName ];
         System.debug(fieldList);
         
-        List<FieldDefinition> fieldNames = new List<FieldDefinition>();
+        List<String> fieldNames = new List<String>();
         for(FieldDefinition item: fieldList) {
-          //  String name = item.DeveloperName ;
+            String name = item.DeveloperName ;
             Boolean isSalesforce =  item.Publisher.IsSalesforce;
             
             if(!isSalesforce && !item.DataType.contains('Lookup')) {
-                fieldNames.add(item);
+                fieldNames.add(name);
             }
-        } 
+        }
+        
         return fieldNames;
     }
 
      @AuraEnabled
     public static String getLookupFieldName(String objectName, Id recordId) {
         
-       // if(objectName.contains('__c')) {
-       // 	objectName = objectName.left(objectName.length()-3);
-    	//}
+        if(objectName.contains('__c')) {
+        	objectName = objectName.left(objectName.length()-3);
+    	}
       
         Schema.SObjectType token = recordId.getSObjectType();
         Schema.DescribeSObjectResult dr = token.getDescribe();
        
         String lookupObjectType =  dr.getName();
-         System.debug('Object name ' + objectName  + ' ' + lookupObjectType); 
+      System.debug('Object name ' + objectName  + ' ' + lookupObjectType);
+      
      
         String lookupName = null;
         
-        List<FieldDefinition> fieldList = [Select NamespacePrefix, QualifiedApiName , DataType, FieldDefinition.Publisher.isSalesforce From FieldDefinition where EntityDefinition.QualifiedApiName=: objectName ];
-       
+        List<FieldDefinition> fieldList = [Select Label, QualifiedApiName , DataType, FieldDefinition.Publisher.isSalesforce From FieldDefinition where EntityDefinition.DeveloperName=: objectName ];
         
         List<String> fieldNames = new List<String>();
         for(FieldDefinition item: fieldList) {
@@ -80,7 +79,6 @@ public class PlatformEventSimulatorController {
             if(item.DataType.contains('Lookup') && item.DataType.contains(lookupObjectType)) {
             
               	lookupName = name;
-                 System.debug(lookupName);
                // break;
             }
         }

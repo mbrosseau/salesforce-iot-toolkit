@@ -1,65 +1,99 @@
 ({
-    onCometdLoaded : function(component, event, helper) {
-     //   console.log("Loading Cometd");
-        var cometd = new org.cometd.CometD();
-        component.set('v.cometd', cometd);
-        if (component.get('v.sessionId') != null)
-            helper.connectCometd(component);
-    },
-    
-    
-    onInit : function(component, event, helper) {
-        console.log("Loading Cometd..");
-        component.set('v.cometdSubscriptions', []);
-      //  component.set('v.notifications', []);
-        // Disconnect CometD when leaving page
-        window.addEventListener('unload', function(event) {
-            helper.disconnectCometd(component);
-        });
+  
+    onInitChart : function(component, event, helper) {
         
-        // Retrieve session id
-        var action = component.get('c.getSessionId');
-        action.setCallback(this, function(response) {
-            if (component.isValid() && response.getState() === 'SUCCESS') {
-                component.set('v.sessionId', response.getReturnValue());
-                if (component.get('v.cometd') != null)
-                    helper.connectCometd(component);
-            }
-            else
-                console.error(response);
-        });
+      //     console.log("Loading onInitChart  ...");
         
-        $A.enqueueAction(action);
-                 
-       // helper.displayToast(component, 'success', 'Ready to receive notifications.');
-        
-       
-    },
-     onInitChart : function(component, event, helper) {
-         
-       //   console.log("Loading onInitChart  ...");
-   
-          var eventName =   component.get("v.eventName");
-         if(eventName == null) {return;}
- 		if(!eventName.includes("__e")) {
-              //  console.log("event name (" + eventName + ") does not include __e");
-                helper.displayToast(component, "error", "event name (" + eventName + ")  should be the API name (including '__e')");
+        var eventName =   component.get("v.eventName");
+        if(eventName == null) {return;}
+        if(!eventName.includes("__e")) {
+            //  console.log("event name (" + eventName + ") does not include __e");
+            helper.displayToast(component, "error", "event name (" + eventName + ")  should be the API name (including '__e')");
             return;
         }
-         
-         helper.loadChart(component, event, helper);
-         helper.loadFieldsAndData(component, event, helper);
-       
+        
+   		component.set("v.jsLoaded", true);
+        
+     //   helper.loadChart(component, event, helper);
+       // helper.loadFieldsAndData(component, event, helper);
+        
     },
-    
-    
-      onChangeFieldName : function(component, event, helper) {
-         // console.log("On Change Field");
-         helper.loadChart(component, event, helper);
-                  
-	      var defaultField = helper.getSelectedField(component, helper);
-          
-         helper.getChartData(component, helper, defaultField);
+    receivePayload : function(component, event, helper) {
+        let title = component.get('v.title');
 
-    }
+          let chartId  = component.get("v.chartId");
+       // var canvas = document.getElementById("myChart");
+        var chart = document.getElementById(chartId);
+
+        let chart2 = component.get("v.chart");   
+        
+         if(chart2 == null) {
+            console.error("update date error: chart not rendered " + title);
+           helper.loadChart(component, event, helper);
+            return;
+        }
+        
+		//payload comes from supercomponent listener
+        let payload  = component.get("v.payload");
+      
+        let selectedField  = component.get("v.selectedField");
+       
+        if(selectedField == null) {
+            selectedField = 0;
+        }
+        let payloadAtField = payload[selectedField];
+
+         var newNotification = {
+            x : payload.CreatedDate,
+            y : payloadAtField
+        };
+        
+        
+ 		
+        chart2.data.datasets[0].data.push(newNotification);
+        chart2.update();
+      //  console.log(chart2);
+        // console.log(chart2.data);
+       // helper.loadChart(component, event, helper);
+    
+       
+      //  var chart = window.myChart;
+        
+  
+    //    chart.data.datasets[0].data.push(newNotification);
+     //   chart.update();
+        
+        
+    },
+  setFieldLabel : function(component, event, helper) {	
+   
+     	helper.loadChart(component, event, helper);
+      
+      let eventDataList = component.get("v.eventDataList");
+       let chartId  = component.get("v.chartId");
+      
+      
+      
+     // var chart = window.myChart;
+      let chart = document.getElementById(chartId); 
+      for(var i=0; i<eventDataList.length; i++) {
+             if(eventDataList[i][selectedField] != null) {
+                var newNotification = {
+                    x : eventDataList[i].CreatedDate,
+                    y :eventDataList[i][selectedField]
+                };
+           
+        		chart.data.datasets[0].data.push(newNotification);
+            }
+        }
+           chart.update();
+    },
+    loadChart : function(component, event, helper) {
+        
+        
+       // let selectedFieldValue  = component.get("v.selectedFieldValue");
+	 	helper.loadChart(component, event, helper);
+   
+    } 
+    
 })
