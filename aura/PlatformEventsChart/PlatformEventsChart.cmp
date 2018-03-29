@@ -1,0 +1,37 @@
+<aura:component controller="PlatformEventsChartController" implements="flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes" access="global" >
+
+    <ltng:require scripts="{!$Resource.cometd}" afterScriptsLoaded="{!c.onCometdLoaded}"/> 
+    <ltng:require scripts="{!$Resource.chartJS}"  afterScriptsLoaded="{!c.onInitChart}"/>
+    
+    <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="sessionId" type="String"/>
+    <aura:attribute name="cometd" type="Object"/>
+    <aura:attribute name="cometdSubscriptions" type="Object[]"/>
+
+    <aura:attribute name="deviceId" type="String" access="global"/>
+    <aura:attribute name="eventName" type="String" access="global"/>
+    <aura:attribute name="objectName" type="String" access="global"/>
+
+    <aura:attribute name="objectFields" type="String[]" />
+      <aura:attribute name="objectDefs" type="Object[]"/>
+    
+ 
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}"/>
+  
+    <div class="slds-grid" style="max-width: 100%; background: rgb(255, 255, 255); padding: 1rem;">
+        <table>
+            <tr><td><div aura:id="msgDiv"/></td></tr>
+            <tr><td>
+        <select onchange="{!c.onChangeFieldName}"  id="selectField">
+            <aura:iteration var="item" items="{!v.objectFields}"  indexVar="indx">      
+                <option value="{!item}">{!item}</option>
+            </aura:iteration>
+        </select> <br/>
+                </td></tr>
+         <tr><td>
+        <canvas id="myChart" aura:id="myChart" width="100%" height="400"></canvas> 
+            </td></tr>
+        </table>
+    </div>
+    
+</aura:component>

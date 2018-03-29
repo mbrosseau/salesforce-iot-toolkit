@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Platform_Event_Simulator_Unmanaged</fullName>
+    <types>
+        <members>PlatformEventSimulatorController</members>
+        <members>PlatformEventSimulatorTests</members>
+        <members>PlatformEventsChartController</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>PlatformEventSimulator</members>
+        <members>PlatformEventsChart</members>
+        <name>AuraDefinitionBundle</name>
+    </types>
+    <types>
+        <members>SampleEvent__e.DeviceId__c</members>
+        <members>SampleEvent__e.Humidity__c</members>
+        <members>SampleEvent__e.Temperature__c</members>
+        <members>Sample_Event_Data_Store__c.Asset__c</members>
+        <members>Sample_Event_Data_Store__c.Humidity__c</members>
+        <members>Sample_Event_Data_Store__c.Temperature__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>SampleEvent__e</members>
+        <members>Sample_Event_Data_Store__c</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Sample_Event_Data_Store__c-Sample Event Data Store Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
+        <members>IOTCloudLogo</members>
+        <members>chartJS</members>
+        <members>cometd</members>
+        <name>StaticResource</name>
+    </types>
+    <version>42.0</version>
+</Package>

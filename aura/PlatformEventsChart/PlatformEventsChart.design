@@ -1,0 +1,5 @@
+<design:component >
+    <design:attribute name="eventName" label="Platform Event Name" required="true"  default=""/>
+    <design:attribute name="deviceId" label="Device Key Field (Optional)" required="false" default=""/>
+    <design:attribute name="objectName" label="Custom Object Name (Optional)" default=""/>
+</design:component>
