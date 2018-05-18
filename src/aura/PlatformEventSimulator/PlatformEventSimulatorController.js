@@ -1,252 +1,176 @@
 ({
-    getEventFields : function(component, event, helper) {
-        //console.log("- Init loading IoT Event object fields");
-        
-        var action = component.get("c.getEventFields");
-        action.setParams({
-            eventName : component.get("v.eventName")
-        });
-        
-        action.setCallback(this, function(a) {
-            if (a.getState() === "SUCCESS") {
-                //  console.log("Loaded Event Object Fields");
-                //console.log(a.getReturnValue());
-                var fieldsNames = a.getReturnValue();
-                var deviceKey = component.get("v.deviceId");
-                
-                var index = fieldsNames.indexOf(deviceKey.substring(0, deviceKey.length-3));
-                //console.log(index);
-                if (index > -1) {
-                    fieldsNames.splice(index, 1);
-                }
-                
-                component.set("v.objectFields", fieldsNames);
-                
-            } else if (a.getState() === "ERROR") {
-                console.log("Loading Event Object Fields Failed! ");
-                //  console.log(a.getError());
-                $A.log("Errors", a.getError());
-                helper.displayToast(component, "error", "Loading Event Object Fields Failed! " + a.getError());
-            }
-        });
-        
-        $A.enqueueAction(action);
-        
-        
-    },
-    getParentLookup : function(component, event, helper) {
-        
-        var action = component.get("c.getLookupFieldName");
-        action.setParams({
-            objectName : component.get("v.objectName"),
-            recordId : component.get("v.recordId")
-        });
-        
-        action.setCallback(this, function(a) {
-            if (a.getState() === "SUCCESS") {
-                //  console.log("Loaded Parent Object lookup field");
-                //  console.log(a.getReturnValue());
-                var parentName = a.getReturnValue();
-                component.set("v.parentField", parentName);
-                
-            } else if (a.getState() === "ERROR") {
-                console.log("Loading Parent Object lookup Failed! ");
-                //   console.log(a.getError());
-                $A.log("Errors", a.getError());
-                helper.displayToast(component, "error", "Loading Parent Object lookup Failed! " + a.getError());
-            }
-        });
-        
-        $A.enqueueAction(action);
-        
-    },
     
-    selectTab : function(component, tabNum) {
-        // console.log("Selected tab " + tabNum);
+    doInit : function(component, event, helper) {
+        // console.log("Loading IoT Simulator Component ");
         
-        var tabList = [];
-        tabList[0] =  component.find('tab-default-1');
-        tabList[1] =  component.find('tab-default-2');
-        //  tabList[2] =  component.find('tab-default-3');
+        var deviceId =  component.get("v.deviceId");
+        if(deviceId == null || deviceId.length == 0) {return;}
         
-        var contentList = [];
-        contentList[0] =  component.find('tab-content-1');
-        contentList[1] =  component.find('tab-content-2');
-        //  contentList[2] =  component.find('tab-content-3');
-        
-        for(var i=0; i<tabList.length; i++ ) {
-            $A.util.removeClass(tabList[i], 'slds-is-active'); 
+        if(!deviceId.includes("__c")) {
+            //  console.log("deviceId (" + deviceId + ") does not include __c");
+            helper.displayToast(component, "error", "deviceId (" + deviceId +") name should be the API name (including '__c')");
+            return;
         }
-        $A.util.addClass(tabList[tabNum-1], 'slds-is-active');
         
-        for(var i=0; i<contentList.length; i++ ) {
-            $A.util.removeClass(contentList[i], 'slds-show'); 
-            $A.util.addClass(contentList[i], 'slds-hide');
+        var eventName =   component.get("v.eventName");
+        if(eventName == null || eventName.length == 0) {return;}
+        if(!eventName.includes("__e")) {
+            //  console.log("event name (" + eventName + ") does not include __e");
+            helper.displayToast(component, "error", "event name (" + eventName + ")  should be the API name (including '__e')");
+            return;
         }
-        $A.util.addClass(contentList[tabNum-1], 'slds-show');
         
-    },
-    upload: function(component, fileContents, helper) {
-        var action = component.get("c.saveTheFile"); 
+        helper.getEventFields(component, event, helper);
         
-        action.setParams({
-            parentId: component.get("v.recordId"),
-            base64Data: encodeURIComponent(fileContents), 
-            objectName: component.get("v.objectName"),
-            url : component.get("v.url"),
-            token : component.get("v.token")
-        });
+        var objectName =  component.get("v.objectName");
         
-        action.setCallback(this, function(a) {
-            console.log("Success! File loaded.");
-            helper.sendCsvToIoT(component, fileContents, helper);
-        });
-        
-        $A.enqueueAction(action); 
-        
-    },
-    sendCsvToIoT: function(component, fileContents, helper) {
-        
-        console.log("---Converting CSV---");
-        
-        var inputKey = component.get("v.deviceId");
-        var recordId = component.get("v.recordId");
-        
-        var lines=fileContents.split("\n");
-        var result = []; 
-        var headers=lines[0].split(",");
-        
-        var timestamp=0;
-        var sendToIoTMsg = function (cmp, fieldList, iotData) {   
+        if(objectName != null && objectName.length > 0) {  
             
-            // console.log("Timeout ended, sending IOT Event "  + " " + iotData);
-            helper.sendToIOT(cmp, fieldList, iotData);
+            if(!objectName.includes("__c")) {
+                // console.log("__c not included");
+                helper.displayToast(component, "error", "object name (" + objectName + ") should be the API name (including '__c')");
+            }
+            
+            helper.getParentLookup(component, event, helper);
         }   
         
-        var timestamp;
-        
-        //  console.log("---Starting loop---");
-        for(var i=1;i<lines.length;i++){
-            var obj = {};
-            var currentline=lines[i].split(",");  
-            
-            obj[inputKey] = recordId;
-            
-            for(var j=0;j<headers.length;j++){
-                //console.log(headers[j] );
-                if(headers[j].includes("IOTtimestamp")) {
-                    
-                    timestamp = timestamp +  currentline[j]*1000;
-                    
-                } else {
-                    obj[headers[j]] = currentline[j];
-                }
+        // Get the value of the key field
+        var recordId =  component.get("v.recordId");
+        var action = component.get("c.getKeyFieldValue"); 
+        action.setParams({
+            recordId : recordId,
+            keyFieldName : deviceId
+        });
+        action.setCallback(this, function(a) {
+            if (a.getState() === "SUCCESS") {
+                //  console.log("Sending IOT Event Success! ");
+                console.log('returned value ' + a.getReturnValue())
+                component.set('v.deviceIdVal', a.getReturnValue());
+            } else if (a.getState() === "ERROR") {
+                console.log("Getting deviceId value Failed! ");
+                console.log( a.getError());
             }
-            
-            console.log("---Sending timeout " + timestamp);
-            setTimeout(sendToIoTMsg,  timestamp, component, headers, obj);
-            
-        }       
+        });
+        $A.enqueueAction(action);
         
-        
-        return ; //JSON
     },
-    
-    sendToIOT : function(component, fieldList, iotMsg) {
-        console.log("---Sending IoT Msg ---");
-        var spinner = component.find("eventSpinner");
-        $A.util.toggleClass(spinner, "slds-show");
-        // console.log(iotMsg);
+    handleSend : function(component, event, helper) {
+        //console.log("Handle Send");
         
-        //    console.log("---getting data ---");
         var recordId = component.get("v.recordId");
-        var inputKey = component.get("v.deviceId");
+        var inputKey = component.get("v.deviceId");  
         var eventName = component.get("v.eventName");
+        var objectFields = component.get("v.objectFields");
+        var deviceIdVal = component.get("v.deviceIdVal");
         
+        var itemId = null;
         var action = null;
         
-        /***** Generate Platform Event ********/     
-        var eventMsg = "{\"sobjectType\":\"" + eventName + "\",\"" + inputKey + "\":\"" + recordId  + "\"";    
-        for(var i=0; i< fieldList.length; i++) {   
-            var header = fieldList[i];             
-            eventMsg = eventMsg +  ",\"" + header + "__c\": \"" + iotMsg[header] + "\"";
-        }  
+        /***** Generate Platform Event ********/
+        var eventMsg = "{\"sobjectType\":\"" + eventName + "\",\"" + inputKey + "\":\"" + deviceIdVal  + "\"";	 
+        for(var i=0; i< objectFields.length; i++) {
+            itemId = document.getElementById(objectFields[i]);
+            eventMsg = eventMsg +  ",\"" + objectFields[i] + "__c\": \"" + itemId.value + "\"";  
+        }
         eventMsg = eventMsg + "}";
         
-        console.log(eventMsg);
-        
-        /***** Persist Event Data ********/
         var objectName = component.get("v.objectName");
         var parentField = component.get("v.parentField"); 
         var objVal = null;
         
         if(objectName != null && objectName.length > 0) {
+            
+            /***** Persist Event Data ********/
             objVal = "{\"sobjectType\":\"" + objectName + "\",\"" + inputKey + "\":\"" + recordId  + "\"";
             
-            for(var i=0; i< fieldList.length; i++) {      
-                var header = fieldList[i];           
-                objVal = objVal +  ",\"" + header + "__c\": \"" + iotMsg[header] + "\"";  
-                
+            for(var i=0; i< objectFields.length; i++) {
+                itemId = document.getElementById(objectFields[i]);
+                objVal = objVal +  ",\"" + objectFields[i] + "__c\": \"" + itemId.value + "\"";  
             }
+            
             if(parentField != null) {
                 objVal = objVal +  ",\"" + parentField + "\": \"" + recordId + "\"";
             }
             
             objVal = objVal + "}";
-            action = component.get("c.publishAndPersistEvent");
+            
+            component.set("v.objectValue", objVal);
+            objVal = component.get("v.objectValue");
+            
+            // console.log("Publish and Persist");
+            action = component.get("c.publishAndPersistEvent"); 
+            action.setParams({
+                objValue : objVal,
+                eventValue : eventMsg
+            });
+            
             
         } else {
+            //   console.log("Publish Only");
             action = component.get("c.publishEvent");
+            action.setParams({
+                eventValue : eventMsg
+            });
         }
         
-        action.setParams({
-            eventValue : eventMsg,
-            objValue : objVal         
-        });
         
+        console.log("Sending Event to IOT cloud");
+        console.log(eventMsg);
         
         action.setCallback(this, function(a) {
             if (a.getState() === "SUCCESS") {
-                console.log("Sending IOT Event Success! ");
+                //  console.log("Sending IOT Event Success! ");
                 
             } else if (a.getState() === "ERROR") {
                 console.log("Sending IOT Event Failed! ");
-                //  console.log(a.getError());
-                $A.log("Errors", a.getError());
+                console.log( a.getError());
+                //$A.log("Errors", a.getError());
+                helper.displayToast(component, "error", "Sending IOT Event Failed! " + JSON.stringify(a.getError()));
             }
         });
-        
         
         $A.enqueueAction(action);
         
     },
-    displayToast : function(component, type, message) { 
+    selectTab1 : function(component, event, helper) {
+        helper.selectTab(component, 1);
+    },
+    selectTab2 : function(component, event, helper) {
+        helper.selectTab(component, 2);
         
-        //   console.log(message);
-        $A.createComponents([
-            ["ui:message",{ "title" : "Error",  "severity" : type, }],
-            ["ui:outputText",{ "value" : message}]
-        ],
-                            function(components, status, errorMessage){
-                                if (status === "SUCCESS") {
-                                    var message = components[0];
-                                    var outputText = components[1];
-                                    // set the body of the ui:message to be the ui:outputText
-                                    message.set("v.body", outputText);
-                                    var div1 = component.find("msgDiv");
-                                    // Replace div body with the dynamic component
-                                    div1.set("v.body", message);
-                                }
-                                else if (status === "INCOMPLETE") {
-                                    console.log("No response from server or client is offline.")
-                                    // Show offline error
-                                }
-                                    else if (status === "ERROR") {
-                                        console.log("Error: " + errorMessage);
-                                        // Show error message
-                                    }
-                            }
-                           );
         
+    },
+    selectTab3 : function(component, event, helper) {
+        helper.selectTab(component, 3);
+    },
+    
+    save : function(component, event, helper) {
+        
+        var spinner = component.find("eventSpinner");
+        $A.util.toggleClass(spinner, "slds-show");
+        
+        var fileInput = component.find("file").getElement();
+        var file = fileInput.files[0];
+        
+        if (file.size > 750000) {
+            alert('File size cannot exceed ' + 750000 + ' bytes.\n' + 'Selected file size: ' + file.size);
+            return;
+        }
+        
+        var fr = new FileReader();
+        
+        
+        fr.onload = function() {
+            var fileContents = fr.result;
+            var base64Mark = 'base64,';
+            
+            helper.sendCsvToIoT(component, fileContents, helper);
+            
+            
+            
+        };
+        
+        fr.readAsText(file);
     }
+    
 })
