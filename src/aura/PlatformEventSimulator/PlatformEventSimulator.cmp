@@ -15,7 +15,7 @@
         <div class="slds-form slds-form_stacked slds-grow slds-scrollable_y">
             <div class="slds-panel__section">
                 <img src="{!$Resource.IOTCloudLogo}"/> <p/>
-                <h3 class="slds-text-heading_small slds-m-bottom_medium">IOT Event Simulator 345987 112349</h3>
+                <h3 class="slds-text-heading_small slds-m-bottom_medium">IOT Event Simulator</h3>
                 
                 <div class="slds-tabs_default">
                     <ul class="slds-tabs_default__nav" role="tablist">
