@@ -1,5 +1,20 @@
 public class PlatformEventSimulatorController {
     
+    
+    @AuraEnabled
+    public static String getKeyFieldValue(String recordId, String keyFieldName) {
+        String key = keyFieldName;
+        // Find the name of the reference object based on the recordId
+        Id recordIdId = Id.valueOf(recordId);
+        String sObjName = recordIdId.getSObjectType().getDescribe().getName();
+        // Get the key value
+        String queryStr = 'SELECT Id, ' + key + ' FROM ' + sObjName + ' WHERE Id = \'' + recordId + '\' LIMIT 1';
+        Sobject so = Database.Query(queryStr); 
+        String keyFieldValue = (String)so.get(key);
+        System.debug('keyFieldValue ' + keyFieldValue);
+        return keyFieldValue;
+    }
+    
     @AuraEnabled
     public static void createEvent(sObject objValue) {
         insert objValue;      
